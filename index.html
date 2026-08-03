@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Career Compass</title>
+    <meta name="description" content="A humanized job application tracker built with React" />
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        line-height: 1.5;
+        font-weight: 400;
+        color: #213547;
+        background: linear-gradient(135deg, #f8f1ff 0%, #eef8ff 100%);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: linear-gradient(135deg, #f8f1ff 0%, #eef8ff 100%); }
+      button, input, select, textarea { font: inherit; }
+      #root { min-height: 100vh; }
+      .page-shell { max-width: 1300px; margin: 0 auto; padding: 24px; }
+      .hero-card {
+        background: rgba(255,255,255,0.8); backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.7); border-radius: 24px; padding: 28px;
+        display: flex; justify-content: space-between; gap: 20px; box-shadow: 0 18px 45px rgba(74,86,112,0.12);
+      }
+      .eyebrow { text-transform: uppercase; letter-spacing: 0.24em; font-size: 0.75rem; color: #8b5cf6; font-weight: 700; margin: 0 0 8px; }
+      .hero-card h1 { margin: 0; font-size: clamp(1.7rem, 2.5vw, 2.5rem); }
+      .hero-copy { margin: 10px 0 0; color: #5b6472; max-width: 650px; }
+      .hero-prompt { min-width: 220px; background: linear-gradient(135deg, #ffedd5, #fef3c7); border-radius: 18px; padding: 16px; display: flex; align-items: center; gap: 12px; color: #7c3f00; font-weight: 600; }
+      .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+      .stat-card, .panel { background: rgba(255,255,255,0.9); border: 1px solid rgba(220,224,241,0.9); border-radius: 20px; box-shadow: 0 14px 30px rgba(73,89,112,0.08); }
+      .stat-card { padding: 16px 18px; display: flex; flex-direction: column; }
+      .stat-card strong { font-size: 1.45rem; color: #1f2937; }
+      .stat-card span { color: #6b7280; font-size: 0.95rem; }
+      .content-grid { display: grid; grid-template-columns: 1.05fr 1.4fr; gap: 20px; }
+      .panel { padding: 20px; }
+      .panel-heading h2 { margin: 0 0 4px; font-size: 1.15rem; }
+      .panel-heading p { margin: 0; color: #718096; }
+      .job-form { display: grid; gap: 12px; margin-top: 16px; }
+      .job-form label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; color: #374151; }
+      .job-form input, .job-form select, .job-form textarea, .search-box input, .card-actions select { border: 1px solid #d7dce8; border-radius: 12px; padding: 10px 12px; background: #fff; }
+      .job-form button, .delete-btn, .chip { border: none; border-radius: 999px; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+      .job-form button { margin-top: 6px; padding: 12px 16px; background: linear-gradient(135deg, #7c3aed, #2563eb); color: white; font-weight: 700; }
+      .job-form button:hover, .delete-btn:hover, .chip:hover { transform: translateY(-1px); }
+      .row-between { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+      .search-box input { min-width: 180px; }
+      .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 16px; }
+      .chip { padding: 8px 12px; background: #f3f4f6; color: #4b5563; }
+      .chip.active { background: #ede9fe; color: #6d28d9; }
+      .app-list { display: grid; gap: 12px; }
+      .application-card { border: 1px solid #ececf7; border-radius: 16px; padding: 14px; background: linear-gradient(135deg, #ffffff, #f9fbff); }
+      .card-top { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+      .card-top h3 { margin: 0; font-size: 1rem; }
+      .card-top p { margin: 4px 0 0; color: #6b7280; }
+      .status-badge { padding: 6px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
+      .status-badge.applied { background: #dbeafe; color: #1d4ed8; }
+      .status-badge.interview { background: #fef3c7; color: #b45309; }
+      .status-badge.offer { background: #dcfce7; color: #15803d; }
+      .status-badge.closed { background: #f3f4f6; color: #4b5563; }
+      .meta-row { display: flex; flex-wrap: wrap; gap: 12px; margin: 10px 0; color: #64748b; font-size: 0.92rem; }
+      .notes { color: #475569; margin: 0 0 12px; }
+      .card-actions { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+      .delete-btn { padding: 8px 12px; background: #fef2f2; color: #b91c1c; }
+      .empty-state { text-align: center; color: #64748b; padding: 24px 8px; }
+      @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }
+      @media (max-width: 720px) { .hero-card, .row-between, .card-actions { flex-direction: column; align-items: stretch; } .stats-grid { grid-template-columns: 1fr 1fr; } .search-box input { min-width: unset; width: 100%; } }
+      @media (max-width: 480px) { .page-shell { padding: 14px; } .stats-grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+      const starterApps = [
+        { id: 1, company: 'Northstar Labs', role: 'Product Designer', status: 'Interview', date: '2026-08-01', location: 'Remote', notes: 'Warm recruiter call and portfolio review next week.' },
+        { id: 2, company: 'Lumen Studio', role: 'Frontend Developer', status: 'Applied', date: '2026-08-03', location: 'New York', notes: 'Applied with a tailored resume and a short note.' },
+        { id: 3, company: 'Kindred AI', role: 'UX Researcher', status: 'Offer', date: '2026-07-21', location: 'Hybrid', notes: 'Great conversation and thoughtful team culture.' },
+      ];
+
+      const statusOptions = ['Applied', 'Interview', 'Offer', 'Closed'];
+
+      function App() {
+        const [applications, setApplications] = React.useState(() => {
+          const saved = localStorage.getItem('career-compass-apps');
+          return saved ? JSON.parse(saved) : starterApps;
+        });
+        const [formData, setFormData] = React.useState({
+          company: '', role: '', status: 'Applied', date: new Date().toISOString().slice(0, 10), location: '', notes: ''
+        });
+        const [search, setSearch] = React.useState('');
+        const [filterStatus, setFilterStatus] = React.useState('All');
+
+        React.useEffect(() => {
+          localStorage.setItem('career-compass-apps', JSON.stringify(applications));
+        }, [applications]);
+
+        const stats = React.useMemo(() => {
+          const total = applications.length;
+          const interviews = applications.filter((item) => item.status === 'Interview').length;
+          const offers = applications.filter((item) => item.status === 'Offer').length;
+          const closed = applications.filter((item) => item.status === 'Closed').length;
+          return { total, interviews, offers, closed };
+        }, [applications]);
+
+        const filteredApps = React.useMemo(() => {
+          return applications.filter((app) => {
+            const matchesSearch = `${app.company} ${app.role} ${app.notes}`.toLowerCase().includes(search.toLowerCase());
+            const matchesStatus = filterStatus === 'All' || app.status === filterStatus;
+            return matchesSearch && matchesStatus;
+          });
+        }, [applications, search, filterStatus]);
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          if (!formData.company || !formData.role) return;
+          const newEntry = { id: Date.now(), ...formData };
+          setApplications((prev) => [newEntry, ...prev]);
+          setFormData({ company: '', role: '', status: 'Applied', date: new Date().toISOString().slice(0, 10), location: '', notes: '' });
+        };
+
+        const updateStatus = (id, nextStatus) => {
+          setApplications((prev) => prev.map((app) => (app.id === id ? { ...app, status: nextStatus } : app)));
+        };
+
+        const removeApp = (id) => {
+          setApplications((prev) => prev.filter((app) => app.id !== id));
+        };
+
+        return (
+          <div className="page-shell">
+            <header className="hero-card">
+              <div>
+                <p className="eyebrow">Career Compass</p>
+                <h1>Your applications, gently organized.</h1>
+                <p className="hero-copy">Keep the momentum going with a calmer, more human way to track every opportunity.</p>
+              </div>
+              <div className="hero-prompt">
+                <span>✨</span>
+                <p>Small progress still counts.</p>
+              </div>
+            </header>
+
+            <section className="stats-grid">
+              <article className="stat-card"><strong>{stats.total}</strong><span>Total applications</span></article>
+              <article className="stat-card"><strong>{stats.interviews}</strong><span>Interviews</span></article>
+              <article className="stat-card"><strong>{stats.offers}</strong><span>Offers</span></article>
+              <article className="stat-card"><strong>{stats.closed}</strong><span>Closed</span></article>
+            </section>
+
+            <main className="content-grid">
+              <section className="panel form-panel">
+                <div className="panel-heading">
+                  <h2>Add a new step</h2>
+                  <p>Log a fresh application and keep your next move visible.</p>
+                </div>
+                <form onSubmit={handleSubmit} className="job-form">
+                  <label>Company<input value={formData.company} onChange={(e) => setFormData({ ...formData, company: e.target.value })} placeholder="e.g. Bright Horizons" /></label>
+                  <label>Role<input value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} placeholder="e.g. Product Manager" /></label>
+                  <label>Status<select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>{statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}</select></label>
+                  <label>Date applied<input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} /></label>
+                  <label>Location<input value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} placeholder="Remote / London" /></label>
+                  <label>Note<textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows="3" placeholder="What felt promising about this opportunity?" /></label>
+                  <button type="submit">Save application</button>
+                </form>
+              </section>
+
+              <section className="panel list-panel">
+                <div className="panel-heading row-between">
+                  <div>
+                    <h2>Your journey</h2>
+                    <p>Gentle reminders of where you’ve been and what’s next.</p>
+                  </div>
+                  <div className="search-box"><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search roles" /></div>
+                </div>
+
+                <div className="chip-row">
+                  <button className={filterStatus === 'All' ? 'chip active' : 'chip'} onClick={() => setFilterStatus('All')}>All</button>
+                  {statusOptions.map((status) => <button key={status} className={filterStatus === status ? 'chip active' : 'chip'} onClick={() => setFilterStatus(status)}>{status}</button>)}
+                </div>
+
+                <div className="app-list">
+                  {filteredApps.length === 0 ? (
+                    <div className="empty-state"><p>No matches yet. Try a gentler search or add a fresh application.</p></div>
+                  ) : (
+                    filteredApps.map((app) => (
+                      <article key={app.id} className="application-card">
+                        <div className="card-top">
+                          <div>
+                            <h3>{app.company}</h3>
+                            <p>{app.role}</p>
+                          </div>
+                          <span className={`status-badge ${app.status.toLowerCase()}`}>{app.status}</span>
+                        </div>
+                        <div className="meta-row">
+                          <span>📅 {app.date}</span>
+                          <span>📍 {app.location || 'Flexible'}</span>
+                        </div>
+                        <p className="notes">{app.notes}</p>
+                        <div className="card-actions">
+                          <select value={app.status} onChange={(e) => updateStatus(app.id, e.target.value)}>{statusOptions.map((option) => <option key={option} value={option}>{option}</option>)}</select>
+                          <button className="delete-btn" onClick={() => removeApp(app.id)}>Remove</button>
+                        </div>
+                      </article>
+                    ))
+                  )}
+                </div>
+              </section>
+            </main>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+  </body>
+</html>
